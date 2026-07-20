@@ -50,7 +50,13 @@ body::before{ /* darken the yarn so everything pops */
 
 /* ── HERO ── */
 .hero{text-align:center;max-width:560px}
-.logo{width:min(72%,280px);height:auto;display:block;margin:0 auto 18px;filter:drop-shadow(0 8px 22px rgba(0,0,0,.45))}
+.logo{width:min(72%,280px);height:auto;display:block;margin:0 auto 8px;filter:drop-shadow(0 8px 22px rgba(0,0,0,.45))}
+.edition{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  font-weight:600;font-size:11.5px;letter-spacing:.42em;text-transform:uppercase;
+  color:rgba(235,220,245,.72);text-shadow:0 1px 4px rgba(0,0,0,.5);
+  text-align:center;margin:0 0 18px;text-indent:.42em; /* offset trailing tracking so it optically centers */
+}
 .hero h1{
   font-family:var(--disp);font-weight:800;color:#fff;
   font-size:clamp(24px,5.6vw,34px);line-height:1.16;letter-spacing:-.005em;
@@ -135,7 +141,8 @@ footer .links{margin-top:8px;display:flex;gap:16px;justify-content:center;flex-w
 @media(min-width:820px){
   .main{flex-direction:row;gap:56px;justify-content:center;align-items:flex-end}
   .hero{text-align:left;max-width:480px}
-  .logo{margin:0 0 22px;width:280px}
+  .logo{margin:0 0 8px;width:280px}
+  .edition{width:280px;margin:0 0 20px}
   .door{margin-top:0}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -147,6 +154,7 @@ footer .links{margin-top:8px;display:flex;gap:16px;justify-content:center;flex-w
 
     <section class="hero">
       <img class="logo" src="img/ar-logo-sticker.png" alt="ArchRavels"/>
+      <p class="edition">Digital Edition</p>
       <h1>The cozy game of <span class="y">yarn</span>, patterns &amp; tricky decisions.</h1>
       <p class="sub">Spin into the colorful &amp; crafty world of fiber art with solo, pass-n-play and a full Story Mode!</p>
     </section>
