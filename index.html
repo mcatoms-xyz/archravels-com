@@ -50,13 +50,7 @@ body::before{ /* darken the yarn so everything pops */
 
 /* ── HERO ── */
 .hero{text-align:center;max-width:560px}
-.logo{width:min(72%,280px);height:auto;display:block;margin:0 auto 8px;filter:drop-shadow(0 8px 22px rgba(0,0,0,.45))}
-.edition{
-  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-  font-weight:600;font-size:11.5px;letter-spacing:.42em;text-transform:uppercase;
-  color:rgba(235,220,245,.72);text-shadow:0 1px 4px rgba(0,0,0,.5);
-  text-align:center;margin:0 0 18px;text-indent:.42em; /* offset trailing tracking so it optically centers */
-}
+.logo{width:min(72%,280px);height:auto;display:block;margin:0 auto 14px;filter:drop-shadow(0 8px 22px rgba(0,0,0,.45))}
 .hero h1{
   font-family:var(--disp);font-weight:800;color:#fff;
   font-size:clamp(24px,5.6vw,34px);line-height:1.16;letter-spacing:-.005em;
@@ -101,30 +95,28 @@ body::before{ /* darken the yarn so everything pops */
   padding:3px 8px;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.3);
 }
 
-/* ── PHYSICAL GAME CTA ── */
-.phys{
-  display:flex;align-items:center;gap:14px;margin-top:14px;
-  background:linear-gradient(150deg,var(--purple-l),var(--purple));
-  border-radius:13px;padding:13px 16px;text-decoration:none;color:#fff;
-  box-shadow:0 5px 14px rgba(46,32,51,.28);
+/* ── PHYSICAL GAME CTA (the lead) ── */
+.boxlink{display:block;text-decoration:none}
+.boxlink img{width:min(66%,265px);height:auto;display:block;margin:0 auto 14px;
+  filter:drop-shadow(0 12px 26px rgba(46,32,51,.30));transition:transform .13s}
+.boxlink:hover img{transform:translateY(-3px) scale(1.015)}
+.physbtn{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  background:linear-gradient(150deg,#FBA24E,var(--orange));
+  border-radius:14px;padding:15px 18px;text-decoration:none;
+  font-family:var(--disp);font-weight:800;font-size:clamp(18px,4.8vw,20px);
+  color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.18);letter-spacing:.01em;
+  box-shadow:0 6px 16px rgba(217,106,21,.38);
   transition:transform .12s;
 }
-.phys:hover{transform:translateY(-2px)}
-.phys .ic{flex:none;width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;
-  background:rgba(255,255,255,.14)}
-.phys .ic svg{width:26px;height:26px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.phys .txt{flex:1;min-width:0}
-.phys .txt b{display:block;font-family:var(--disp);font-weight:800;font-size:clamp(16px,4.4vw,18.5px);line-height:1.15;letter-spacing:.01em}
-.phys .txt small{display:block;font-family:var(--body);font-size:12.5px;color:rgba(242,230,210,.85);margin-top:2px}
-.phys .arw{flex:none;color:rgba(242,230,210,.7);transition:transform .12s}
-.phys:hover .arw{transform:translateX(4px);color:#fff}
-.phys .arw svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.physbtn:hover{transform:translateY(-2px)}
+.physbtn svg{width:21px;height:21px;stroke:#fff;fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;transition:transform .12s}
+.physbtn:hover svg{transform:translateX(4px)}
 
-.weblink{
-  margin-top:15px;text-align:center;font-size:13px;color:var(--muted);line-height:1.5;
-}
-.weblink a{color:var(--purple);font-family:var(--disp);font-weight:600;text-decoration:underline;text-underline-offset:2px}
-.weblink a:hover{color:var(--orange-d)}
+/* ── divider ── */
+.or{display:flex;align-items:center;gap:12px;margin:18px 0 13px;
+  color:var(--muted);font-family:var(--body);font-size:12.5px}
+.or::before,.or::after{content:'';flex:1;height:1.5px;background:var(--cream-d)}
 
 /* ── FOOTER ── */
 footer{
@@ -140,8 +132,7 @@ footer .links{margin-top:8px;display:flex;gap:16px;justify-content:center;flex-w
   .main{flex-direction:row;gap:56px;justify-content:center;align-items:flex-end}
   .hero{text-align:left;max-width:480px}
   .logo{margin:0 0 8px;width:280px}
-  .edition{width:280px;margin:0 0 20px}
-  .door{margin-top:0}
+    .door{margin-top:0}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -152,14 +143,22 @@ footer .links{margin-top:8px;display:flex;gap:16px;justify-content:center;flex-w
 
     <section class="hero">
       <img class="logo" src="/play/img/ar-logo-sticker.png" alt="ArchRavels"/>
-      <p class="edition">Digital Edition</p>
       <h1>The cozy game of <span class="y">yarn</span>, patterns &amp; tricky decisions.</h1>
       <p class="sub">Spin into the colorful &amp; crafty world of fiber art with solo, pass-n-play and a full Story Mode!</p>
     </section>
 
     <section class="door">
-      <p class="apphead">Get ArchRavels Digital</p>
+      <a class="boxlink" href="https://xyzgamelabs.com/archravels" aria-label="Get the physical ArchRavels tabletop game">
+        <img src="/play/img/ar-box.jpg" alt="The ArchRavels tabletop game box" width="470" height="548"/>
+      </a>
+      <a class="physbtn" href="https://xyzgamelabs.com/archravels">
+        Get the Physical Game
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+      </a>
 
+      <div class="or">or go digital</div>
+
+      <p class="apphead">Get ArchRavels Digital</p>
       <div class="stores">
         <a class="badge" id="ios" href="https://apps.apple.com/us/app/archravels-digital/id6788990106" target="_blank" rel="noopener" aria-label="Download on the App Store">
           <svg viewBox="0 0 24 24" fill="#fff"><path d="M17.05 12.53a4.3 4.3 0 0 1 2.05-3.6 4.4 4.4 0 0 0-3.47-1.87c-1.46-.15-2.88.87-3.63.87s-1.9-.85-3.13-.83a4.62 4.62 0 0 0-3.89 2.37c-1.67 2.89-.43 7.17 1.19 9.51.79 1.15 1.73 2.44 2.96 2.39 1.19-.05 1.64-.77 3.08-.77s1.85.77 3.11.74c1.29-.02 2.1-1.16 2.89-2.31a10.2 10.2 0 0 0 1.31-2.7 4.16 4.16 0 0 1-2.47-3.8ZM14.7 5.5a4.24 4.24 0 0 0 .97-3.03 4.31 4.31 0 0 0-2.83 1.46 4.03 4.03 0 0 0-1 2.92 3.56 3.56 0 0 0 2.86-1.35Z"/></svg>
@@ -172,15 +171,6 @@ footer .links{margin-top:8px;display:flex;gap:16px;justify-content:center;flex-w
           <span class="chip">SOON</span>
         </a>
       </div>
-
-      <a class="phys" href="https://xyzgamelabs.com/archravels" aria-label="Get the physical tabletop game">
-        <span class="ic" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>
-        </span>
-        <span class="txt"><b>Get the Physical Game</b><small>The original tabletop box, cards &amp; yarn tokens</small></span>
-        <span class="arw"><svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></span>
-      </a>
-
     </section>
 
   </div>
