@@ -103,7 +103,7 @@
     <header class="top">
       <div>
         <h1>ArchRavels Digital</h1>
-        <div class="sub">Live stats · updated <b id="stamp">—</b></div>
+        <div class="sub">Since iOS launch · Jul 27 · updated <b id="stamp">—</b></div>
       </div>
       <button class="refresh" id="refreshBtn" onclick="loadStats()" aria-label="Refresh">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
@@ -113,6 +113,9 @@
     </header>
 
     <div class="grid" id="tiles"><!-- tiles injected --></div>
+
+    <div class="section-h">Founder codes · latest redemptions</div>
+    <div id="founders"><!-- injected --></div>
 
     <div class="section-h">Promo codes</div>
     <div id="codes"><!-- codes injected --></div>
@@ -197,18 +200,23 @@ async function loadStats(){
 }
 
 function render(d){
+  const L = d.launch || {};
+  const F = d.founder_codes || {};
+  const launchUnlocks = (L.unlocks_iap||0)+(L.unlocks_promo||0);
   const tiles = [
-    { label:"Signups", num:fmt(d.signups),
-      chips:[ ['var(--purple)', fmt(d.profiles)+' with a game profile'] ] },
-    { label:"Full unlocks", num:fmt(d.unlocks_total),
-      chips:[ ['var(--good)', fmt(d.unlocks_iap)+' IAP'],
-              ['var(--purple)', fmt(d.unlocks_promo)+' promo'],
-              ['var(--idle)', fmt(d.unlocks_legacy)+' legacy'] ] },
-    { label:"Games played", num:fmt(d.games_started),
-      chips:[ ['var(--purple)', fmt(d.games_quick)+' quick'],
-              ['var(--yarn)', fmt(d.games_story)+' story'] ], wide:true },
-    { label:"Games — last 7 days", num:fmt(d.games_last7), chips:[] },
-    { label:"Cloud profiles", num:fmt(d.profiles), chips:[] },
+    { label:"Signups · since launch", num:fmt(L.signups),
+      chips:[ ['var(--idle)', fmt(d.signups)+' all-time'] ] },
+    { label:"Founders redeemed", num:fmt(F.redeemed),
+      chips:[ ['var(--yarn)', fmt(1409)+' codes sent'] ],
+      meter:Math.min(100,Math.round(100*(F.redeemed||0)/1409)) },
+    { label:"Unlocks · since launch", num:fmt(launchUnlocks),
+      chips:[ ['var(--good)', fmt(L.unlocks_iap)+' IAP'],
+              ['var(--purple)', fmt(L.unlocks_promo)+' codes'],
+              ['var(--idle)', fmt(d.unlocks_total)+' all-time'] ] },
+    { label:"Games · since launch", num:fmt(L.games_started),
+      chips:[ ['var(--purple)', fmt(L.games_quick)+' quick'],
+              ['var(--yarn)', fmt(L.games_story)+' story'],
+              ['var(--idle)', fmt(d.games_started)+' all-time'] ], wide:true },
   ];
   document.getElementById("tiles").innerHTML = tiles.map(t=>`
     <div class="tile${t.wide?' wide':''}">
@@ -217,7 +225,16 @@ function render(d){
       ${t.chips.length?`<div class="breakdown">${t.chips.map(c=>
         `<span class="chip"><span class="dot" style="background:${c[0]}"></span><b>${c[1].split(' ')[0]}</b> ${c[1].split(' ').slice(1).join(' ')}</span>`
       ).join('')}</div>`:''}
+      ${t.meter!=null?`<div class="meter" style="margin-top:12px"><span style="width:${t.meter}%"></span></div>`:''}
     </div>`).join('');
+
+  const feed = (d.founder_recent||[]);
+  document.getElementById("founders").innerHTML = feed.length ? feed.map(f=>`
+    <div class="code"><div class="row">
+      <div><div class="name">${f.code}</div><div class="camp">founder</div></div>
+      <div class="count"><small>${ago(new Date(f.at).getTime())}</small></div>
+    </div></div>`).join('')
+    : '<div class="code"><div class="camp">No redemptions yet.</div></div>';
 
   const codes = (d.promo_codes||[]);
   document.getElementById("codes").innerHTML = codes.map(c=>{
