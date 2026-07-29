@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>ArchRavels Digital — Live Stats</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#161122; --surface:#221a35; --surface-2:#2c2242; --line:#3a2f56;
+    --ink:#efeaf9; --muted:#a99fc6; --faint:#7d729c;
+    --purple:#8f6dff; --purple-soft:#b9a4ff;
+    --yarn:#ff8a63; --good:#4bd6a0; --idle:#6b6288;
+    --radius:18px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  body{min-height:100dvh;padding:max(18px,env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom))}
+  h1,h2,.num{font-family:"Poppins",sans-serif}
+  .wrap{max-width:640px;margin:0 auto}
+
+  /* ---- gate ---- */
+  #gate{min-height:82dvh;display:flex;align-items:center;justify-content:center}
+  .gate-card{width:100%;max-width:360px;background:var(--surface);border:1px solid var(--line);
+    border-radius:var(--radius);padding:30px 24px;text-align:center}
+  .gate-card .mark{font-size:34px;line-height:1}
+  .gate-card h1{font-size:20px;font-weight:700;margin:14px 0 4px}
+  .gate-card p{color:var(--muted);font-size:13px;margin-bottom:20px}
+  .gate-card input{width:100%;padding:14px 16px;font-size:16px;border-radius:12px;
+    border:1px solid var(--line);background:var(--bg);color:var(--ink);text-align:center;letter-spacing:.04em}
+  .gate-card input:focus{outline:none;border-color:var(--purple)}
+  .gate-card button{width:100%;margin-top:12px;padding:14px;font-size:15px;font-weight:600;
+    border:none;border-radius:12px;background:var(--purple);color:#fff;cursor:pointer}
+  .gate-card button:active{transform:translateY(1px)}
+  .gate-err{color:var(--yarn);font-size:13px;margin-top:12px;min-height:16px}
+
+  /* ---- dashboard ---- */
+  #dash{display:none}
+  header.top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:18px}
+  header.top h1{font-size:22px;font-weight:700;letter-spacing:-.01em}
+  header.top .sub{color:var(--muted);font-size:12.5px;margin-top:3px}
+  header.top .sub b{color:var(--purple-soft);font-weight:600}
+  .refresh{flex:none;background:var(--surface);border:1px solid var(--line);color:var(--ink);
+    border-radius:12px;padding:9px 12px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px}
+  .refresh:active{transform:translateY(1px)}
+  .refresh.spin svg{animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  .tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 16px 15px}
+  .tile.wide{grid-column:1 / -1}
+  .tile .label{color:var(--muted);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+  .tile .num{font-size:38px;font-weight:700;line-height:1.05;margin-top:6px;font-variant-numeric:tabular-nums}
+  .tile .num small{font-size:15px;color:var(--faint);font-weight:600}
+  .breakdown{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+  .chip{font-size:12px;color:var(--muted);background:var(--surface-2);border:1px solid var(--line);
+    border-radius:999px;padding:4px 10px;font-weight:600}
+  .chip b{color:var(--ink);font-weight:700}
+  .chip .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:middle}
+
+  .section-h{margin:24px 2px 12px;font-size:13px;font-weight:700;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.06em}
+  .code{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:13px 15px;margin-bottom:10px}
+  .code .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .code .name{font-family:"Poppins";font-weight:600;font-size:15px;letter-spacing:.02em}
+  .code .camp{color:var(--faint);font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+  .code .count{font-size:14px;font-weight:700;font-variant-numeric:tabular-nums}
+  .code .count small{color:var(--faint);font-weight:600}
+  .badge{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
+    padding:3px 8px;border-radius:999px}
+  .badge.on{color:var(--good);background:rgba(75,214,160,.12)}
+  .badge.off{color:var(--idle);background:rgba(107,98,136,.18)}
+  .meter{height:6px;border-radius:999px;background:var(--surface-2);margin-top:10px;overflow:hidden}
+  .meter span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--purple),var(--yarn))}
+
+  footer{margin-top:26px;text-align:center;color:var(--faint);font-size:11.5px;line-height:1.7}
+  .lock-out{background:none;border:none;color:var(--faint);font-size:11.5px;text-decoration:underline;cursor:pointer;padding:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ GATE ============ -->
+  <div id="gate">
+    <form class="gate-card" onsubmit="return tryUnlock(event)">
+      <div class="mark">🧶</div>
+      <h1>ArchRavels Digital</h1>
+      <p>Live stats — enter access code</p>
+      <input id="pw" type="password" inputmode="text" autocomplete="off" autocapitalize="none"
+             autocorrect="off" spellcheck="false" placeholder="access code" aria-label="access code">
+      <button type="submit">Unlock</button>
+      <div class="gate-err" id="gerr"></div>
+    </form>
+  </div>
+
+  <!-- ============ DASHBOARD ============ -->
+  <div id="dash">
+    <header class="top">
+      <div>
+        <h1>ArchRavels Digital</h1>
+        <div class="sub">Live stats · updated <b id="stamp">—</b></div>
+      </div>
+      <button class="refresh" id="refreshBtn" onclick="loadStats()" aria-label="Refresh">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+             stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+        <span>Refresh</span>
+      </button>
+    </header>
+
+    <div class="grid" id="tiles"><!-- tiles injected --></div>
+
+    <div class="section-h">Promo codes</div>
+    <div id="codes"><!-- codes injected --></div>
+
+    <footer>
+      Aggregate figures only · live from Supabase<br>
+      <button class="lock-out" onclick="lockOut()">Lock this page</button>
+    </footer>
+  </div>
+
+</div>
+
+<script>
+/* ============================================================
+   CONFIG  — safe to expose (publishable key + read-only aggregate RPC)
+   To change the access code: replace ACCESS_HASH with the SHA-256
+   hex of your new code. Current code: "yarn-shop-2026"
+   ============================================================ */
+const SUPABASE_URL   = "https://ingppffghqsajdrgahcm.supabase.co";
+const PUBLISHABLE_KEY = "sb_publishable__41r1k47DJnKmtbmVNqYKQ_yOL98eTd";
+const ACCESS_HASH    = "033e41f37e540556919855260cd2488134c875eab9a83edc69c6642b7e285d9e";
+const REMEMBER_KEY   = "ar_stats_ok";
+
+/* ---- gate ---- */
+async function sha256(str){
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+  return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+async function tryUnlock(e){
+  e.preventDefault();
+  const val = document.getElementById("pw").value.trim();
+  const err = document.getElementById("gerr");
+  if(await sha256(val) === ACCESS_HASH){
+    try{ localStorage.setItem(REMEMBER_KEY, ACCESS_HASH); }catch(_){}
+    reveal();
+  }else{
+    err.textContent = "Nope — try again.";
+    document.getElementById("pw").value = "";
+  }
+  return false;
+}
+function reveal(){
+  document.getElementById("gate").style.display="none";
+  document.getElementById("dash").style.display="block";
+  loadStats();
+}
+function lockOut(){
+  try{ localStorage.removeItem(REMEMBER_KEY); }catch(_){}
+  location.reload();
+}
+
+/* ---- data ---- */
+function fmt(n){ return (n==null?"—":Number(n).toLocaleString()); }
+function ago(d){
+  const s=Math.round((Date.now()-d)/1000);
+  if(s<60) return "just now";
+  if(s<3600) return Math.floor(s/60)+"m ago";
+  return Math.floor(s/3600)+"h ago";
+}
+let lastStamp=null;
+setInterval(()=>{ if(lastStamp) document.getElementById("stamp").textContent=ago(lastStamp); }, 20000);
+
+async function loadStats(){
+  const btn=document.getElementById("refreshBtn"); btn.classList.add("spin");
+  try{
+    const res = await fetch(SUPABASE_URL+"/rest/v1/rpc/ar_public_stats",{
+      method:"POST",
+      headers:{ "apikey":PUBLISHABLE_KEY, "Authorization":"Bearer "+PUBLISHABLE_KEY,
+                "Content-Type":"application/json" },
+      body:"{}"
+    });
+    if(!res.ok) throw new Error("HTTP "+res.status);
+    const d = await res.json();
+    render(d);
+    lastStamp=Date.now();
+    document.getElementById("stamp").textContent="just now";
+  }catch(err){
+    document.getElementById("tiles").innerHTML =
+      '<div class="tile wide"><div class="label">Couldn\'t load</div>'+
+      '<div class="num" style="font-size:18px">'+err.message+'</div></div>';
+  }finally{ btn.classList.remove("spin"); }
+}
+
+function render(d){
+  const tiles = [
+    { label:"Signups", num:fmt(d.signups),
+      chips:[ ['var(--purple)', fmt(d.profiles)+' with a game profile'] ] },
+    { label:"Full unlocks", num:fmt(d.unlocks_total),
+      chips:[ ['var(--good)', fmt(d.unlocks_iap)+' IAP'],
+              ['var(--purple)', fmt(d.unlocks_promo)+' promo'],
+              ['var(--idle)', fmt(d.unlocks_legacy)+' legacy'] ] },
+    { label:"Games played", num:fmt(d.games_started),
+      chips:[ ['var(--purple)', fmt(d.games_quick)+' quick'],
+              ['var(--yarn)', fmt(d.games_story)+' story'] ], wide:true },
+    { label:"Games — last 7 days", num:fmt(d.games_last7), chips:[] },
+    { label:"Cloud profiles", num:fmt(d.profiles), chips:[] },
+  ];
+  document.getElementById("tiles").innerHTML = tiles.map(t=>`
+    <div class="tile${t.wide?' wide':''}">
+      <div class="label">${t.label}</div>
+      <div class="num">${t.num}</div>
+      ${t.chips.length?`<div class="breakdown">${t.chips.map(c=>
+        `<span class="chip"><span class="dot" style="background:${c[0]}"></span><b>${c[1].split(' ')[0]}</b> ${c[1].split(' ').slice(1).join(' ')}</span>`
+      ).join('')}</div>`:''}
+    </div>`).join('');
+
+  const codes = (d.promo_codes||[]);
+  document.getElementById("codes").innerHTML = codes.map(c=>{
+    const pct = c.max_uses ? Math.min(100, Math.round(100*c.uses/c.max_uses)) : 0;
+    return `<div class="code">
+      <div class="row">
+        <div><div class="name">${c.code}</div><div class="camp">${c.campaign}</div></div>
+        <div style="text-align:right">
+          <span class="badge ${c.active?'on':'off'}">${c.active?'active':'inactive'}</span>
+          <div class="count" style="margin-top:6px">${fmt(c.uses)}<small> / ${fmt(c.max_uses)}</small></div>
+        </div>
+      </div>
+      <div class="meter"><span style="width:${pct}%"></span></div>
+    </div>`;
+  }).join('');
+}
+
+/* ---- boot: auto-unlock if remembered ---- */
+(function(){
+  let ok=false;
+  try{ ok = localStorage.getItem(REMEMBER_KEY)===ACCESS_HASH; }catch(_){}
+  if(ok) reveal();
+  else document.getElementById("pw").focus();
+})();
+</script>
+</body>
+</html>
