@@ -114,7 +114,7 @@
 
     <div class="grid" id="tiles"><!-- tiles injected --></div>
 
-    <div class="section-h">Founder codes · latest redemptions</div>
+    <div class="section-h">Founder redemptions</div>
     <div id="founders"><!-- injected --></div>
 
     <div class="section-h">Promo codes</div>
@@ -229,12 +229,26 @@ function render(d){
     </div>`).join('');
 
   const feed = (d.founder_recent||[]);
-  document.getElementById("founders").innerHTML = feed.length ? feed.map(f=>`
-    <div class="code"><div class="row">
-      <div><div class="name">${f.code}</div><div class="camp">founder</div></div>
-      <div class="count"><small>${ago(new Date(f.at).getTime())}</small></div>
-    </div></div>`).join('')
-    : '<div class="code"><div class="camp">No redemptions yet.</div></div>';
+  const fCount = (F.redeemed!=null?F.redeemed:feed.length);
+  document.getElementById("founders").innerHTML = `
+    <div class="code">
+      <div class="row" style="cursor:pointer" id="fToggle">
+        <div><div class="name"><span id="fCaret">\u25b8</span> ${fmt(fCount)} redeemed</div>
+          <div class="camp">tap to expand</div></div>
+        <div class="count"><small>of ${fmt(1409)} sent</small></div>
+      </div>
+      <div id="fList" hidden style="margin-top:10px">
+        ${feed.length?feed.map(f=>`
+          <div class="row" style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-top:1px solid var(--line)">
+            <div class="name" style="font-size:13.5px">${f.code}</div>
+            <div class="count"><small>${ago(new Date(f.at).getTime())}</small></div>
+          </div>`).join(''):'<div class="camp" style="padding:7px 0">No redemptions yet.</div>'}
+      </div>
+    </div>`;
+  document.getElementById("fToggle").addEventListener("click", function(){
+    const l=document.getElementById("fList"), c=document.getElementById("fCaret");
+    l.hidden=!l.hidden; c.textContent=l.hidden?"\u25b8":"\u25be";
+  });
 
   const codes = (d.promo_codes||[]);
   document.getElementById("codes").innerHTML = codes.map(c=>{
