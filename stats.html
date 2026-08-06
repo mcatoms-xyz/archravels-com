@@ -30,14 +30,16 @@
     border-radius:var(--radius);padding:30px 24px;text-align:center}
   .gate-card .mark{font-size:34px;line-height:1}
   .gate-card h1{font-size:20px;font-weight:700;margin:14px 0 4px}
-  .gate-card p{color:var(--muted);font-size:13px;margin-bottom:20px}
+  .gate-card p{color:var(--muted);font-size:13px;margin-bottom:20px;line-height:1.5}
   .gate-card input{width:100%;padding:14px 16px;font-size:16px;border-radius:12px;
-    border:1px solid var(--line);background:var(--bg);color:var(--ink);text-align:center;letter-spacing:.04em}
+    border:1px solid var(--line);background:var(--bg);color:var(--ink);text-align:center}
   .gate-card input:focus{outline:none;border-color:var(--purple)}
   .gate-card button{width:100%;margin-top:12px;padding:14px;font-size:15px;font-weight:600;
     border:none;border-radius:12px;background:var(--purple);color:#fff;cursor:pointer}
-  .gate-card button:active{transform:translateY(1px)}
-  .gate-err{color:var(--yarn);font-size:13px;margin-top:12px;min-height:16px}
+  .gate-card button:disabled{opacity:.5;cursor:default}
+  .gate-card button:active:not(:disabled){transform:translateY(1px)}
+  .gate-err{color:var(--yarn);font-size:13px;margin-top:12px;min-height:16px;line-height:1.5}
+  .gate-ok{color:var(--good);font-size:13.5px;margin-top:14px;line-height:1.6}
 
   /* ---- dashboard ---- */
   #dash{display:none}
@@ -75,8 +77,31 @@
     padding:3px 8px;border-radius:999px}
   .badge.on{color:var(--good);background:rgba(75,214,160,.12)}
   .badge.off{color:var(--idle);background:rgba(107,98,136,.18)}
+  .badge.used{color:var(--yarn);background:rgba(255,138,99,.14)}
   .meter{height:6px;border-radius:999px;background:var(--surface-2);margin-top:10px;overflow:hidden}
   .meter span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--purple),var(--yarn))}
+
+  /* ---- mint tool ---- */
+  .mint{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+  .mint label{display:block;color:var(--muted);font-size:11.5px;font-weight:700;
+    text-transform:uppercase;letter-spacing:.05em;margin:0 0 6px}
+  .mint input{width:100%;padding:12px 14px;font-size:16px;border-radius:12px;
+    border:1px solid var(--line);background:var(--bg);color:var(--ink);margin-bottom:12px}
+  .mint input:focus{outline:none;border-color:var(--purple)}
+  .mint button{width:100%;padding:14px;font-size:15px;font-weight:700;border:none;border-radius:12px;
+    background:var(--yarn);color:#2a1206;cursor:pointer}
+  .mint button:disabled{opacity:.5;cursor:default}
+  .mint button:active:not(:disabled){transform:translateY(1px)}
+  .mint .hint{color:var(--faint);font-size:11.5px;margin-top:10px;line-height:1.5}
+  .minted{margin-top:14px;background:var(--surface-2);border:1px dashed var(--purple);
+    border-radius:14px;padding:16px;text-align:center;display:none}
+  .minted .lbl{color:var(--muted);font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+  .minted .val{font-family:"Poppins";font-size:26px;font-weight:700;letter-spacing:.06em;
+    margin:8px 0 4px;color:var(--purple-soft);word-break:break-all}
+  .minted .who{color:var(--faint);font-size:12px;margin-bottom:12px}
+  .minted button{width:100%;padding:11px;font-size:13.5px;font-weight:700;border:none;border-radius:10px;
+    background:var(--purple);color:#fff;cursor:pointer}
+  .mint-err{color:var(--yarn);font-size:13px;margin-top:10px;min-height:16px;line-height:1.5}
 
   footer{margin-top:26px;text-align:center;color:var(--faint);font-size:11.5px;line-height:1.7}
   .lock-out{background:none;border:none;color:var(--faint);font-size:11.5px;text-decoration:underline;cursor:pointer;padding:0}
@@ -87,14 +112,15 @@
 
   <!-- ============ GATE ============ -->
   <div id="gate">
-    <form class="gate-card" onsubmit="return tryUnlock(event)">
+    <form class="gate-card" id="gateForm">
       <div class="mark">🧶</div>
       <h1>ArchRavels Digital</h1>
-      <p>Live stats — enter access code</p>
-      <input id="pw" type="password" inputmode="text" autocomplete="off" autocapitalize="none"
-             autocorrect="off" spellcheck="false" placeholder="access code" aria-label="access code">
-      <button type="submit">Unlock</button>
+      <p>Staff only. Enter your <b>@xyzgamelabs.com</b> address and we'll email you a sign-in link.</p>
+      <input id="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none"
+             autocorrect="off" spellcheck="false" placeholder="you@xyzgamelabs.com" aria-label="work email">
+      <button type="submit" id="gateBtn">Email me a link</button>
       <div class="gate-err" id="gerr"></div>
+      <div class="gate-ok" id="gok" style="display:none"></div>
     </form>
   </div>
 
@@ -105,7 +131,7 @@
         <h1>ArchRavels Digital</h1>
         <div class="sub">Since iOS launch · Jul 27 · updated <b id="stamp">—</b></div>
       </div>
-      <button class="refresh" id="refreshBtn" onclick="loadStats()" aria-label="Refresh">
+      <button class="refresh" id="refreshBtn" aria-label="Refresh">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
              stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
         <span>Refresh</span>
@@ -114,165 +140,298 @@
 
     <div class="grid" id="tiles"><!-- tiles injected --></div>
 
-    <div class="section-h">Founder redemptions</div>
+    <div class="section-h">Mint a support code</div>
+    <div class="mint">
+      <form id="mintForm">
+        <label for="issuedTo">Who is it for</label>
+        <input id="issuedTo" type="text" autocomplete="off" placeholder="name or email" aria-label="who is it for">
+        <label for="mintNote">Note (optional)</label>
+        <input id="mintNote" type="text" autocomplete="off" placeholder="why, e.g. BackerKit code never arrived" aria-label="note">
+        <button type="submit" id="mintBtn">Mint code</button>
+      </form>
+      <div class="mint-err" id="merr"></div>
+      <div class="minted" id="minted">
+        <div class="lbl">New code</div>
+        <div class="val" id="mintedCode">—</div>
+        <div class="who" id="mintedWho"></div>
+        <button type="button" id="copyBtn">Copy</button>
+      </div>
+      <div class="hint">Single use · never expires · unlocks the full game. Every code records who it was for and who cut it.</div>
+    </div>
+
+    <div class="section-h">Support codes issued</div>
+    <div id="support"><!-- injected --></div>
+
+    <div class="section-h">Founder batches</div>
     <div id="founders"><!-- injected --></div>
 
     <div class="section-h">Promo codes</div>
     <div id="codes"><!-- codes injected --></div>
 
     <footer>
-      Aggregate figures only · live from Supabase<br>
-      <button class="lock-out" onclick="lockOut()">Lock this page</button>
+      Signed in as <b id="whoami">—</b> · live from Supabase<br>
+      <button class="lock-out" id="signOutBtn">Sign out</button>
     </footer>
   </div>
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 /* ============================================================
-   CONFIG  — safe to expose (publishable key + read-only aggregate RPC)
-   To change the access code: replace ACCESS_HASH with the SHA-256
-   hex of your new code. Current code: (set by Adam 7/29)
+   ArchRavels Digital — staff stats + support-code minting
+
+   ACCESS: Supabase magic link, restricted to @xyzgamelabs.com.
+   The domain check below is for UX only. The real enforcement is
+   server-side inside the SECURITY DEFINER functions
+   ar_public_stats / mint_support_code / list_support_codes,
+   each of which reads the caller's email from the signed JWT and
+   rejects anything that is not @xyzgamelabs.com. Deleting the
+   JavaScript check in devtools gets you nothing.
    ============================================================ */
-const SUPABASE_URL   = "https://ingppffghqsajdrgahcm.supabase.co";
+const SUPABASE_URL    = "https://ingppffghqsajdrgahcm.supabase.co";
 const PUBLISHABLE_KEY = "sb_publishable__41r1k47DJnKmtbmVNqYKQ_yOL98eTd";
-const ACCESS_HASH    = "26f898219fc761eb5428f07ba969bd49d232bc72831f6778b986891af94e3eaa";
-const REMEMBER_KEY   = "ar_stats_ok";
+const STAFF_DOMAIN    = "@xyzgamelabs.com";
 
-/* ---- gate ---- */
-async function sha256(str){
-  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
-  return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join("");
-}
-async function tryUnlock(e){
-  e.preventDefault();
-  const val = document.getElementById("pw").value.trim();
-  const err = document.getElementById("gerr");
-  if(await sha256(val) === ACCESS_HASH){
-    try{ localStorage.setItem(REMEMBER_KEY, ACCESS_HASH); }catch(_){}
-    reveal();
-  }else{
-    err.textContent = "Nope — try again.";
-    document.getElementById("pw").value = "";
-  }
-  return false;
-}
-function reveal(){
-  document.getElementById("gate").style.display="none";
-  document.getElementById("dash").style.display="block";
-  loadStats();
-}
-function lockOut(){
-  try{ localStorage.removeItem(REMEMBER_KEY); }catch(_){}
-  location.reload();
-}
+const sb = window.supabase.createClient(SUPABASE_URL, PUBLISHABLE_KEY, {
+  auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
+});
 
-/* ---- data ---- */
+const $ = function(id){ return document.getElementById(id); };
+function isStaff(email){ return !!email && email.toLowerCase().endsWith(STAFF_DOMAIN); }
 function fmt(n){ return (n==null?"—":Number(n).toLocaleString()); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
 function ago(d){
   const s=Math.round((Date.now()-d)/1000);
   if(s<60) return "just now";
   if(s<3600) return Math.floor(s/60)+"m ago";
-  return Math.floor(s/3600)+"h ago";
+  if(s<86400) return Math.floor(s/3600)+"h ago";
+  return Math.floor(s/86400)+"d ago";
 }
 let lastStamp=null;
-setInterval(()=>{ if(lastStamp) document.getElementById("stamp").textContent=ago(lastStamp); }, 20000);
+setInterval(function(){ if(lastStamp) $("stamp").textContent=ago(lastStamp); }, 20000);
 
-async function loadStats(){
-  const btn=document.getElementById("refreshBtn"); btn.classList.add("spin");
+/* ---------------- auth ---------------- */
+$("gateForm").addEventListener("submit", async function(e){
+  e.preventDefault();
+  const email = $("email").value.trim();
+  const err = $("gerr"), ok = $("gok"), btn = $("gateBtn");
+  err.textContent = ""; ok.style.display = "none";
+  if(!isStaff(email)){ err.textContent = "That has to be an @xyzgamelabs.com address."; return; }
+  btn.disabled = true; btn.textContent = "Sending…";
+  const { error } = await sb.auth.signInWithOtp({
+    email: email,
+    options:{ emailRedirectTo: location.origin + location.pathname }
+  });
+  btn.disabled = false; btn.textContent = "Email me a link";
+  if(error){
+    err.textContent = /rate|limit|seconds/i.test(error.message)
+      ? "Too many sign-in emails. Built-in mail is capped at 2 per hour. Wait a bit, or use the link already in your inbox."
+      : error.message;
+    return;
+  }
+  ok.style.display = "block";
+  ok.innerHTML = "Link sent to <b>"+esc(email)+"</b>.<br>Open it on this device. It expires in an hour.";
+});
+
+$("signOutBtn").addEventListener("click", async function(){
+  await sb.auth.signOut();
+  location.href = location.origin + location.pathname;
+});
+
+async function boot(){
+  const { data } = await sb.auth.getSession();
+  const session = data ? data.session : null;
+  const email = session && session.user ? session.user.email : null;
+  if(session && isStaff(email)){ reveal(email); return; }
+  if(session && !isStaff(email)){
+    await sb.auth.signOut();
+    $("gerr").textContent = "That account isn't an @xyzgamelabs.com address.";
+  }
+  $("email").focus();
+}
+function reveal(email){
+  $("gate").style.display = "none";
+  $("dash").style.display = "block";
+  $("whoami").textContent = email;
+  if(history.replaceState) history.replaceState(null,"",location.origin+location.pathname);
+  loadAll();
+}
+
+/* ---------------- data ---------------- */
+$("refreshBtn").addEventListener("click", loadAll);
+
+async function loadAll(){
+  const btn = $("refreshBtn"); btn.classList.add("spin");
   try{
-    const res = await fetch(SUPABASE_URL+"/rest/v1/rpc/ar_public_stats",{
-      method:"POST",
-      headers:{ "apikey":PUBLISHABLE_KEY, "Authorization":"Bearer "+PUBLISHABLE_KEY,
-                "Content-Type":"application/json" },
-      body:"{}"
-    });
-    if(!res.ok) throw new Error("HTTP "+res.status);
-    const d = await res.json();
-    render(d);
-    lastStamp=Date.now();
-    document.getElementById("stamp").textContent="just now";
+    const stats = await sb.rpc("ar_public_stats");
+    if(stats.error) throw new Error(stats.error.message);
+    render(stats.data);
+    const list = await sb.rpc("list_support_codes", { p_limit: 25 });
+    renderSupport(list.error ? [] : (list.data || []), list.error);
+    lastStamp = Date.now();
+    $("stamp").textContent = "just now";
   }catch(err){
-    document.getElementById("tiles").innerHTML =
+    $("tiles").innerHTML =
       '<div class="tile wide"><div class="label">Couldn\'t load</div>'+
-      '<div class="num" style="font-size:18px">'+err.message+'</div></div>';
+      '<div class="num" style="font-size:18px">'+esc(err.message)+'</div></div>';
   }finally{ btn.classList.remove("spin"); }
 }
 
+const BATCH_NAMES = {
+  "bk-founders":     "Magic Socks founders",
+  "bk-founders-ar1": "Original campaign founders",
+  "support":         "Support codes"
+};
+
 function render(d){
   const L = d.launch || {};
-  const F = d.founder_codes || {};
-  const launchUnlocks = (L.unlocks_iap||0)+(L.unlocks_promo||0);
+  const batches = (d.batches || []).filter(function(b){ return b.campaign !== "support"; });
+  const founderTotal    = batches.reduce(function(a,b){ return a + (b.total||0); }, 0);
+  const founderRedeemed = batches.reduce(function(a,b){ return a + (b.redeemed||0); }, 0);
+  const launchUnlocks   = (L.unlocks_iap||0) + (L.unlocks_promo||0);
+
   const tiles = [
     { label:"Signups · since launch", num:fmt(L.signups),
-      chips:[ ['var(--idle)', fmt(d.signups)+' all-time'] ] },
-    { label:"Founders redeemed", num:fmt(F.redeemed),
-      chips:[ ['var(--yarn)', fmt(1409)+' codes sent'] ],
-      meter:Math.min(100,Math.round(100*(F.redeemed||0)/1409)) },
+      chips:[ ["var(--idle)", fmt(d.signups)+" all-time"] ] },
+    { label:"Founders redeemed", num:fmt(founderRedeemed),
+      chips:[ ["var(--yarn)", fmt(founderTotal)+" codes out"] ],
+      meter: founderTotal ? Math.min(100, Math.round(100*founderRedeemed/founderTotal)) : 0 },
     { label:"Unlocks · since launch", num:fmt(launchUnlocks),
-      chips:[ ['var(--good)', fmt(L.unlocks_iap)+' IAP'],
-              ['var(--purple)', fmt(L.unlocks_promo)+' codes'],
-              ['var(--idle)', fmt(d.unlocks_total)+' all-time'] ] },
+      chips:[ ["var(--good)", fmt(L.unlocks_iap)+" IAP"],
+              ["var(--purple)", fmt(L.unlocks_promo)+" codes"],
+              ["var(--idle)", fmt(d.unlocks_total)+" all-time"] ] },
     { label:"Games · since launch", num:fmt(L.games_started),
-      chips:[ ['var(--purple)', fmt(L.games_quick)+' quick'],
-              ['var(--yarn)', fmt(L.games_story)+' story'],
-              ['var(--idle)', fmt(d.games_started)+' all-time'] ], wide:true },
+      chips:[ ["var(--purple)", fmt(L.games_quick)+" quick"],
+              ["var(--yarn)", fmt(L.games_story)+" story"],
+              ["var(--idle)", fmt(d.games_started)+" all-time"] ], wide:true }
   ];
-  document.getElementById("tiles").innerHTML = tiles.map(t=>`
-    <div class="tile${t.wide?' wide':''}">
-      <div class="label">${t.label}</div>
-      <div class="num">${t.num}</div>
-      ${t.chips.length?`<div class="breakdown">${t.chips.map(c=>
-        `<span class="chip"><span class="dot" style="background:${c[0]}"></span><b>${c[1].split(' ')[0]}</b> ${c[1].split(' ').slice(1).join(' ')}</span>`
-      ).join('')}</div>`:''}
-      ${t.meter!=null?`<div class="meter" style="margin-top:12px"><span style="width:${t.meter}%"></span></div>`:''}
-    </div>`).join('');
+  $("tiles").innerHTML = tiles.map(function(t){ return ''+
+    '<div class="tile'+(t.wide?" wide":"")+'">'+
+      '<div class="label">'+t.label+'</div>'+
+      '<div class="num">'+t.num+'</div>'+
+      (t.chips.length? '<div class="breakdown">'+t.chips.map(function(c){
+        const parts=c[1].split(" ");
+        return '<span class="chip"><span class="dot" style="background:'+c[0]+'"></span><b>'+
+               parts[0]+'</b> '+parts.slice(1).join(" ")+'</span>';
+      }).join("")+'</div>' : "")+
+      (t.meter!=null? '<div class="meter" style="margin-top:12px"><span style="width:'+t.meter+'%"></span></div>' : "")+
+    '</div>'; }).join("");
 
-  const feed = (d.founder_recent||[]);
-  const fCount = (F.redeemed!=null?F.redeemed:feed.length);
-  document.getElementById("founders").innerHTML = `
-    <div class="code">
-      <div class="row" style="cursor:pointer" id="fToggle">
-        <div><div class="name"><span id="fCaret">\u25b8</span> ${fmt(fCount)} redeemed</div>
-          <div class="camp">tap to expand</div></div>
-        <div class="count"><small>of ${fmt(1409)} sent</small></div>
-      </div>
-      <div id="fList" hidden style="margin-top:10px">
-        ${feed.length?feed.map(f=>`
-          <div class="row" style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-top:1px solid var(--line)">
-            <div class="name" style="font-size:13.5px">${f.code}</div>
-            <div class="count"><small>${ago(new Date(f.at).getTime())}</small></div>
-          </div>`).join(''):'<div class="camp" style="padding:7px 0">No redemptions yet.</div>'}
-      </div>
-    </div>`;
-  document.getElementById("fToggle").addEventListener("click", function(){
-    const l=document.getElementById("fList"), c=document.getElementById("fCaret");
-    l.hidden=!l.hidden; c.textContent=l.hidden?"\u25b8":"\u25be";
-  });
+  /* founder batches */
+  $("founders").innerHTML = batches.length ? batches.map(function(b){
+    const pct = b.total ? Math.min(100, Math.round(100*b.redeemed/b.total)) : 0;
+    return '<div class="code">'+
+      '<div class="row">'+
+        '<div><div class="name">'+esc(BATCH_NAMES[b.campaign]||b.campaign)+'</div>'+
+          '<div class="camp">'+esc(b.campaign)+'</div></div>'+
+        '<div class="count">'+fmt(b.redeemed)+'<small> / '+fmt(b.total)+'</small></div>'+
+      '</div>'+
+      '<div class="meter"><span style="width:'+pct+'%"></span></div>'+
+    '</div>';
+  }).join("") : '<div class="code"><div class="camp">No batches.</div></div>';
 
-  const codes = (d.promo_codes||[]);
-  document.getElementById("codes").innerHTML = codes.map(c=>{
+  /* recent founder redemptions */
+  const feed = d.founder_recent || [];
+  if(feed.length){
+    $("founders").innerHTML += '<div class="code">'+
+      '<div class="row" style="cursor:pointer" id="fToggle">'+
+        '<div><div class="name"><span id="fCaret">▸</span> Latest redemptions</div>'+
+          '<div class="camp">tap to expand</div></div>'+
+        '<div class="count"><small>last '+feed.length+'</small></div>'+
+      '</div>'+
+      '<div id="fList" hidden style="margin-top:10px">'+
+        feed.map(function(f){ return '<div style="display:flex;justify-content:space-between;'+
+          'align-items:center;padding:7px 0;border-top:1px solid var(--line)">'+
+          '<div class="name" style="font-size:13.5px">'+esc(f.code)+'</div>'+
+          '<div class="count"><small>'+ago(new Date(f.at).getTime())+'</small></div></div>'; }).join("")+
+      '</div></div>';
+    $("fToggle").addEventListener("click", function(){
+      const l=$("fList"), c=$("fCaret");
+      l.hidden=!l.hidden; c.textContent=l.hidden?"▸":"▾";
+    });
+  }
+
+  /* named multi-use promo codes */
+  const codes = d.promo_codes || [];
+  $("codes").innerHTML = codes.length ? codes.map(function(c){
     const pct = c.max_uses ? Math.min(100, Math.round(100*c.uses/c.max_uses)) : 0;
-    return `<div class="code">
-      <div class="row">
-        <div><div class="name">${c.code}</div><div class="camp">${c.campaign}</div></div>
-        <div style="text-align:right">
-          <span class="badge ${c.active?'on':'off'}">${c.active?'active':'inactive'}</span>
-          <div class="count" style="margin-top:6px">${fmt(c.uses)}<small> / ${fmt(c.max_uses)}</small></div>
-        </div>
-      </div>
-      <div class="meter"><span style="width:${pct}%"></span></div>
-    </div>`;
-  }).join('');
+    return '<div class="code">'+
+      '<div class="row">'+
+        '<div><div class="name">'+esc(c.code)+'</div><div class="camp">'+esc(c.campaign)+'</div></div>'+
+        '<div style="text-align:right">'+
+          '<span class="badge '+(c.active?"on":"off")+'">'+(c.active?"active":"inactive")+'</span>'+
+          '<div class="count" style="margin-top:6px">'+fmt(c.uses)+'<small> / '+fmt(c.max_uses)+'</small></div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="meter"><span style="width:'+pct+'%"></span></div>'+
+    '</div>'; }).join("") : '<div class="code"><div class="camp">None.</div></div>';
 }
 
-/* ---- boot: auto-unlock if remembered ---- */
-(function(){
-  let ok=false;
-  try{ ok = localStorage.getItem(REMEMBER_KEY)===ACCESS_HASH; }catch(_){}
-  if(ok) reveal();
-  else document.getElementById("pw").focus();
-})();
+function renderSupport(rows, error){
+  if(error){
+    $("support").innerHTML = '<div class="code"><div class="camp">'+esc(error.message)+'</div></div>';
+    return;
+  }
+  $("support").innerHTML = rows.length ? rows.map(function(r){
+    return '<div class="code">'+
+      '<div class="row">'+
+        '<div><div class="name">'+esc(r.code)+'</div>'+
+          '<div class="camp">'+esc(r.issued_to)+(r.note?' · '+esc(r.note):'')+'</div></div>'+
+        '<div style="text-align:right">'+
+          '<span class="badge '+(r.uses>0?"used":"on")+'">'+(r.uses>0?"redeemed":"unused")+'</span>'+
+          '<div class="count" style="margin-top:6px"><small>'+ago(new Date(r.created_at).getTime())+'</small></div>'+
+        '</div>'+
+      '</div>'+
+    '</div>'; }).join("")
+    : '<div class="code"><div class="camp">None issued yet.</div></div>';
+}
+
+/* ---------------- mint ---------------- */
+$("mintForm").addEventListener("submit", async function(e){
+  e.preventDefault();
+  const to = $("issuedTo").value.trim();
+  const note = $("mintNote").value.trim();
+  const err = $("merr"), btn = $("mintBtn"), box = $("minted");
+  err.textContent = ""; box.style.display = "none";
+  if(!to){ err.textContent = "Put a name or an email in first."; return; }
+  btn.disabled = true; btn.textContent = "Minting…";
+  const { data, error } = await sb.rpc("mint_support_code", { p_issued_to: to, p_note: note || null });
+  btn.disabled = false; btn.textContent = "Mint code";
+  if(error){
+    err.textContent = /not_authorized/.test(error.message)
+      ? "Your account isn't allowed to mint. Sign in with an @xyzgamelabs.com address."
+      : error.message;
+    return;
+  }
+  $("mintedCode").textContent = data.code;
+  $("mintedWho").textContent = "for " + data.issued_to;
+  box.style.display = "block";
+  $("issuedTo").value = ""; $("mintNote").value = "";
+  const list = await sb.rpc("list_support_codes", { p_limit: 25 });
+  renderSupport(list.error ? [] : (list.data || []), list.error);
+});
+
+$("copyBtn").addEventListener("click", async function(){
+  const code = $("mintedCode").textContent;
+  try{
+    await navigator.clipboard.writeText(code);
+    this.textContent = "Copied";
+    const b = this;
+    setTimeout(function(){ b.textContent = "Copy"; }, 1600);
+  }catch(_){
+    this.textContent = "Copy failed — select it manually";
+  }
+});
+
+/* ---------------- boot ---------------- */
+sb.auth.onAuthStateChange(function(evt, session){
+  if(evt === "SIGNED_IN" && session && isStaff(session.user.email)){
+    if($("dash").style.display !== "block") reveal(session.user.email);
+  }
+});
+boot();
 </script>
 </body>
 </html>
