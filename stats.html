@@ -40,6 +40,9 @@
   .gate-card button:active:not(:disabled){transform:translateY(1px)}
   .gate-err{color:var(--yarn);font-size:13px;margin-top:12px;min-height:16px;line-height:1.5}
   .gate-ok{color:var(--good);font-size:13.5px;margin-top:14px;line-height:1.6}
+  .gate-hint{margin-top:18px;padding-top:16px;border-top:1px solid var(--line);
+    color:var(--faint);font-size:11.5px;line-height:1.6}
+  .gate-hint b{color:var(--muted);font-weight:700}
 
   /* ---- dashboard ---- */
   #dash{display:none}
@@ -121,6 +124,12 @@
       <button type="submit" id="gateBtn">Email me a link</button>
       <div class="gate-err" id="gerr"></div>
       <div class="gate-ok" id="gok" style="display:none"></div>
+      <div class="gate-hint">
+        Heads up: we can only send <b>2 sign-in emails per hour</b>, for everyone combined.
+        If your link doesn't arrive, check spam before asking for another one, and reuse
+        a link you already have rather than requesting a fresh one. Links last an hour,
+        and once you're in, you stay signed in.
+      </div>
     </form>
   </div>
 
@@ -353,20 +362,39 @@ function render(d){
     });
   }
 
-  /* named multi-use promo codes */
+  /* named multi-use promo codes, expandable to show who redeemed */
   const codes = d.promo_codes || [];
-  $("codes").innerHTML = codes.length ? codes.map(function(c){
+  $("codes").innerHTML = codes.length ? codes.map(function(c,i){
     const pct = c.max_uses ? Math.min(100, Math.round(100*c.uses/c.max_uses)) : 0;
+    const who = c.redeemers || [];
+    const canOpen = who.length > 0;
     return '<div class="code">'+
-      '<div class="row">'+
-        '<div><div class="name">'+esc(c.code)+'</div><div class="camp">'+esc(c.campaign)+'</div></div>'+
+      '<div class="row"'+(canOpen?' style="cursor:pointer" data-toggle="pc'+i+'"':'')+'>'+
+        '<div><div class="name">'+(canOpen?'<span id="pcCaret'+i+'">▸</span> ':'')+esc(c.code)+'</div>'+
+          '<div class="camp">'+esc(c.campaign)+(canOpen?' · tap to see who':'')+'</div></div>'+
         '<div style="text-align:right">'+
           '<span class="badge '+(c.active?"on":"off")+'">'+(c.active?"active":"inactive")+'</span>'+
           '<div class="count" style="margin-top:6px">'+fmt(c.uses)+'<small> / '+fmt(c.max_uses)+'</small></div>'+
         '</div>'+
       '</div>'+
       '<div class="meter"><span style="width:'+pct+'%"></span></div>'+
+      (canOpen ? '<div id="pc'+i+'" hidden style="margin-top:10px">'+
+        who.map(function(r){
+          return '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;'+
+            'padding:7px 0;border-top:1px solid var(--line)">'+
+            '<div style="font-size:13px;word-break:break-all">'+esc(r.email || "(account deleted)")+'</div>'+
+            '<div class="count" style="flex:none"><small>'+ago(new Date(r.at).getTime())+'</small></div></div>';
+        }).join("")+'</div>' : "")+
     '</div>'; }).join("") : '<div class="code"><div class="camp">None.</div></div>';
+
+  Array.prototype.forEach.call($("codes").querySelectorAll("[data-toggle]"), function(row){
+    row.addEventListener("click", function(){
+      const id = row.getAttribute("data-toggle");
+      const list = $(id), caret = $("pcCaret"+id.replace("pc",""));
+      list.hidden = !list.hidden;
+      if(caret) caret.textContent = list.hidden ? "▸" : "▾";
+    });
+  });
 }
 
 function renderSupport(rows, error){
