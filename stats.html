@@ -149,6 +149,20 @@
 
     <div class="grid" id="tiles"><!-- tiles injected --></div>
 
+    <div class="section-h">Backer lookup</div>
+    <div class="mint">
+      <form id="lookForm">
+        <label for="lookQ">Email, name, or code</label>
+        <input id="lookQ" type="text" autocomplete="off" autocapitalize="none" autocorrect="off"
+               spellcheck="false" placeholder="jane@example.com" aria-label="email, name, or code">
+        <button type="submit" id="lookBtn" style="background:var(--purple);color:#fff">Look up</button>
+      </form>
+      <div class="mint-err" id="lerr"></div>
+      <div class="hint">Searches the BackerKit assignment snapshot for both campaigns, plus any support
+        codes we've cut. Works backwards too: paste a code to see whose it is.</div>
+    </div>
+    <div id="lookResults" style="margin-top:10px"></div>
+
     <div class="section-h">Mint a support code</div>
     <div class="mint">
       <form id="mintForm">
@@ -414,6 +428,81 @@ function renderSupport(rows, error){
       '</div>'+
     '</div>'; }).join("")
     : '<div class="code"><div class="camp">None issued yet.</div></div>';
+}
+
+/* ---------------- backer lookup ---------------- */
+const CAMPAIGN_LABEL = {
+  "bk-founders":     "Magic Socks campaign",
+  "bk-founders-ar1": "Original campaign",
+  "support":         "Support code"
+};
+
+$("lookForm").addEventListener("submit", async function(e){
+  e.preventDefault();
+  const q = $("lookQ").value.trim();
+  const err = $("lerr"), btn = $("lookBtn"), out = $("lookResults");
+  err.textContent = ""; out.innerHTML = "";
+  if(q.length < 3){ err.textContent = "Give me at least 3 characters."; return; }
+  btn.disabled = true; btn.textContent = "Looking…";
+  const { data, error } = await sb.rpc("lookup_backer", { p_query: q });
+  btn.disabled = false; btn.textContent = "Look up";
+  if(error){
+    err.textContent = /not_authorized/.test(error.message)
+      ? "Your account isn't allowed to look up backers."
+      : (/query_too_short/.test(error.message) ? "Give me at least 3 characters." : error.message);
+    return;
+  }
+  renderLookup(data || [], q);
+});
+
+function renderLookup(rows, q){
+  const out = $("lookResults");
+  if(!rows.length){
+    out.innerHTML = '<div class="code"><div class="name">No match</div>'+
+      '<div class="camp" style="margin-top:4px">Nothing found for "'+esc(q)+'". '+
+      'Try part of the email, or their name as BackerKit has it.</div></div>';
+    return;
+  }
+  out.innerHTML = rows.map(function(r){
+    const redeemed = !!r.redeemed_at;
+    const mismatch = redeemed && r.redeemed_by && r.email &&
+                     r.redeemed_by.toLowerCase() !== r.email.toLowerCase();
+    return '<div class="code">'+
+      '<div class="row">'+
+        '<div><div class="name">'+esc(r.code)+'</div>'+
+          '<div class="camp">'+esc(CAMPAIGN_LABEL[r.campaign] || r.campaign)+'</div></div>'+
+        '<div style="text-align:right">'+
+          '<span class="badge '+(redeemed?"used":"on")+'">'+(redeemed?"redeemed":"unused")+'</span>'+
+        '</div>'+
+      '</div>'+
+      '<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line);'+
+        'font-size:13px;line-height:1.7;color:var(--muted)">'+
+        (r.name  ? '<div><b style="color:var(--ink)">'+esc(r.name)+'</b></div>' : '')+
+        (r.email ? '<div style="word-break:break-all">'+esc(r.email)+'</div>' : '')+
+        (redeemed
+          ? '<div style="color:var(--faint)">Redeemed '+ago(new Date(r.redeemed_at).getTime())+
+            (r.redeemed_by ? ' by <span style="word-break:break-all">'+esc(r.redeemed_by)+'</span>' : '')+'</div>'
+          : '<div style="color:var(--good)">Not used yet — safe to re-send this one.</div>')+
+        (mismatch
+          ? '<div style="color:var(--yarn);margin-top:4px">Redeemed from a different address than BackerKit has. '+
+            'Usually Apple Hide My Email or a second address, not a problem by itself.</div>'
+          : '')+
+      '</div>'+
+      '<button type="button" class="copy-code" data-code="'+esc(r.code)+'" '+
+        'style="width:100%;margin-top:12px;padding:10px;font-size:13px;font-weight:700;border:none;'+
+        'border-radius:10px;background:var(--surface-2);color:var(--ink);cursor:pointer">Copy code</button>'+
+    '</div>';
+  }).join("");
+
+  Array.prototype.forEach.call(out.querySelectorAll(".copy-code"), function(b){
+    b.addEventListener("click", async function(){
+      try{
+        await navigator.clipboard.writeText(b.getAttribute("data-code"));
+        b.textContent = "Copied";
+        setTimeout(function(){ b.textContent = "Copy code"; }, 1600);
+      }catch(_){ b.textContent = "Copy failed"; }
+    });
+  });
 }
 
 /* ---------------- mint ---------------- */
