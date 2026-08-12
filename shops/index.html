@@ -284,8 +284,11 @@ footer a:hover{text-decoration:underline}
 
 /* ── DESKTOP: two-up hero + door. 860px is THE stacking breakpoint for the whole page. ── */
 @media(min-width:861px){
-  .main{flex-direction:row;gap:56px;justify-content:center;align-items:center;flex-wrap:wrap}
-  .hero{text-align:left;max-width:480px}
+  .main{flex-direction:row;gap:clamp(26px,4.4vw,56px);justify-content:center;align-items:center;flex-wrap:wrap}
+  /* shrink to fit rather than wrapping early: without these the row broke at ~1040px,
+     which is 480 + 460 + 56 gap + 44 shell padding, long before the 860 breakpoint. */
+  .hero{flex:1 1 360px;min-width:0;text-align:left;max-width:480px}
+  .door{flex:1 1 330px;min-width:0}
   .logo{margin:0 0 8px;width:280px}
   .dt{justify-content:flex-start}
   .detail{flex-basis:100%;margin-top:10px}
