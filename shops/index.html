@@ -69,7 +69,15 @@ body::before{
 .hero .sub2{font-size:clamp(14px,3.3vw,15.5px);color:#D2BFE4;font-style:italic;margin-top:12px}
 
 /* ── DICE TOWER CALLOUT ── */
-.dt{margin-top:20px;display:flex;align-items:center;gap:16px;justify-content:center}
+.dt{margin-top:20px;display:flex;align-items:center;gap:16px;justify-content:center;
+  text-decoration:none;transition:transform .13s}
+.dt:hover{transform:translateY(-2px)}
+.dt:hover .dtseal{filter:drop-shadow(0 10px 22px rgba(0,0,0,.55))}
+.dtwatch{display:inline-flex;align-items:center;gap:6px;margin-top:7px;
+  font-family:var(--biz);font-style:normal;font-size:12.5px;font-weight:600;color:#6FD3F7;
+  text-shadow:0 2px 6px rgba(0,0,0,.6)}
+.dtwatch svg{width:13px;height:13px;fill:#6FD3F7}
+.dt:hover .dtwatch{text-decoration:underline}
 .dtseal{
   flex:none;width:100px;height:auto;
   filter:drop-shadow(0 8px 18px rgba(0,0,0,.45));
@@ -298,13 +306,14 @@ footer a:hover{text-decoration:underline}
       <img class="logo" src="/play/img/ar-logo-sticker.png" alt="ArchRavels"/>
       <p class="sub"><b>ArchRavels is a competitive board game set in the world of fiber arts.</b> Play as one of 8 characters, each with their own crafting specialty. Hit the Yarn Bazaar to build up your stash, follow the patterns to make cuddly bears, warm blankets and cozy scarves, then turn in what you finish to score. Most points wins. 2 to 4 players, 30 to 45 minutes, ages 8+.</p>
 
-      <div class="dt">
+      <a class="dt" href="https://www.youtube.com/watch?v=HY4kRUu8ifU" target="_blank" rel="noopener">
         <!-- DEPLOY NOTE: commit ops/archravels-com-dt-seal.png to archravels-com as /play/img/dt-seal.png -->
         <img class="dtseal" src="/play/img/dt-seal.png" alt="The Dice Tower Seal of Approval" width="640" height="640"/>
         <blockquote class="dtq">&ldquo;Tried &amp; true formula presented to a new audience, and I like it!&rdquo;
           <b>Tom Vasel &middot; The Dice Tower</b>
+          <span class="dtwatch"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>Watch the review</span>
         </blockquote>
-      </div>
+      </a>
     </section>
 
     <section class="door">
