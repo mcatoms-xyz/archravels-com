@@ -138,7 +138,7 @@
     <header class="top">
       <div>
         <h1>ArchRavels Digital</h1>
-        <div class="sub">Since iOS launch · Jul 27 · updated <b id="stamp">—</b></div>
+        <div class="sub">iOS Jul 27 · Android Aug 14 · updated <b id="stamp">—</b></div>
       </div>
       <button class="refresh" id="refreshBtn" aria-label="Refresh">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
@@ -310,25 +310,32 @@ const BATCH_NAMES = {
 
 function render(d){
   const L = d.launch || {};
+  const A = d.launch_android || {};
   const batches = (d.batches || []).filter(function(b){ return b.campaign !== "support"; });
   const founderTotal    = batches.reduce(function(a,b){ return a + (b.total||0); }, 0);
   const founderRedeemed = batches.reduce(function(a,b){ return a + (b.redeemed||0); }, 0);
   const launchUnlocks   = (L.unlocks_iap||0) + (L.unlocks_promo||0);
+  const androidUnlocks  = (A.unlocks_iap||0) + (A.unlocks_promo||0);
 
   const tiles = [
-    { label:"Signups · since launch", num:fmt(L.signups),
+    { label:"Signups · since iOS launch", num:fmt(L.signups),
       chips:[ ["var(--idle)", fmt(d.signups)+" all-time"] ] },
     { label:"Founders redeemed", num:fmt(founderRedeemed),
       chips:[ ["var(--yarn)", fmt(founderTotal)+" codes out"] ],
       meter: founderTotal ? Math.min(100, Math.round(100*founderRedeemed/founderTotal)) : 0 },
-    { label:"Unlocks · since launch", num:fmt(launchUnlocks),
+    { label:"Unlocks · since iOS launch", num:fmt(launchUnlocks),
       chips:[ ["var(--good)", fmt(L.unlocks_iap)+" IAP"],
               ["var(--purple)", fmt(L.unlocks_promo)+" codes"],
               ["var(--idle)", fmt(d.unlocks_total)+" all-time"] ] },
-    { label:"Games · since launch", num:fmt(L.games_started),
+    { label:"Games started · since iOS launch", num:fmt(L.games_started),
       chips:[ ["var(--purple)", fmt(L.games_quick)+" quick"],
               ["var(--yarn)", fmt(L.games_story)+" story"],
-              ["var(--idle)", fmt(d.games_started)+" all-time"] ], wide:true }
+              ["var(--good)", fmt(L.games_finished)+" finished"],
+              ["var(--idle)", fmt(d.games_started)+" all-time"] ], wide:true },
+    { label:"Since Android launch · Aug 14", num:fmt(A.signups)+" signups",
+      chips:[ ["var(--good)", fmt(androidUnlocks)+" unlocks"],
+              ["var(--purple)", fmt(A.games_started)+" games"],
+              ["var(--idle)", "both stores combined"] ], wide:true }
   ];
   $("tiles").innerHTML = tiles.map(function(t){ return ''+
     '<div class="tile'+(t.wide?" wide":"")+'">'+
