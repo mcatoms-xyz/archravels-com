@@ -337,6 +337,35 @@ function render(d){
               ["var(--purple)", fmt(A.games_started)+" games"],
               ["var(--idle)", "both stores combined"] ], wide:true }
   ];
+
+  /* Build 17+ tracking: platform split, store events, challenge mode.
+     These read zeros until Build 17 ships — the app only started tagging
+     platform / purchases / challenges in that build. 'unknown' = older builds. */
+  const PF = d.platforms || {};
+  const pfChip = function(key, label, color){
+    const p = PF[key]; if(!p) return null;
+    return [color, fmt(p.starts)+" "+label];
+  };
+  const pfChips = [ pfChip("ios","iOS starts","var(--good)"),
+                    pfChip("android","Android starts","var(--purple)"),
+                    pfChip("web","web starts","var(--yarn)"),
+                    pfChip("unknown","pre-17 builds","var(--idle)") ]
+                  .filter(function(x){ return x; });
+  const pfTotal = Object.keys(PF).reduce(function(a,k){ return a + (PF[k].starts||0); }, 0);
+  const EP = d.ev_purchases || {}, EF = d.ev_first_runs || {}, C = d.challenges || {};
+  tiles.push(
+    { label:"Platform split · from Build 17", num: pfChips.length ? fmt(pfTotal)+" tagged starts" : "awaiting Build 17",
+      chips: pfChips, wide:true },
+    { label:"Store events · from Build 17", num: fmt(EP.total||0)+" purchases",
+      chips:[ ["var(--good)", fmt(EP.last7||0)+" last 7d"],
+              ["var(--purple)", fmt(d.ev_restores||0)+" restores"],
+              ["var(--yarn)", fmt((EF.total)||0)+" first-runs"] ] },
+    { label:"Challenges · from Build 17", num: fmt(C.games||0)+" games",
+      chips:[ ["var(--good)", fmt(C.players||0)+" players"],
+              ["var(--purple)", fmt(C.wins||0)+" wins"],
+              ["var(--yarn)", fmt(C.opted_in||0)+" on the boards"],
+              ["var(--idle)", fmt(C.games_last7||0)+" last 7d"] ], wide:true }
+  );
   $("tiles").innerHTML = tiles.map(function(t){ return ''+
     '<div class="tile'+(t.wide?" wide":"")+'">'+
       '<div class="label">'+t.label+'</div>'+
